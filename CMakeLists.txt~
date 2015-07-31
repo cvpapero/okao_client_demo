@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(okao_client)
+project(okao_client_demo)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -201,12 +201,11 @@ target_link_libraries(people_recog_info ${catkin_LIBRARIES})
 add_executable(recog_info_vision src/recog_info_vision.cpp)
 target_link_libraries(recog_info_vision ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
-
 #サブモジュール
-add_executable(eye_contact_move_base_test src/eye_contact_move_base_test.cpp)
-target_link_libraries(eye_contact_move_base_test ${catkin_LIBRARIES})
+add_executable(okao_stack src/okao_stack.cpp)
+target_link_libraries(okao_stack ${catkin_LIBRARIES})
 
-add_executable(people_position_server2 src/people_position_server2.cpp)
-target_link_libraries(people_position_server2 ${catkin_LIBRARIES})
+add_executable(people_position_server src/people_position_server.cpp)
+target_link_libraries(people_position_server ${catkin_LIBRARIES})
 
 
