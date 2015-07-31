@@ -5,5 +5,5 @@
 	
 	<!--node pkg="okao_clien_demot" type="recog_info_vision" respawn="false" name="recog_info_vision" output="screen" /-->
 	<node pkg="okao_client_demo" type="okao_stack" respawn="false" name="okao_stack" output="screen" />
-	<node pkg="okao_client_demo" type="people_position_server2" respawn="false" name="people_position_server2" output="screen" />
+	<node pkg="okao_client_demo" type="people_position_server" respawn="false" name="people_position_server" output="screen" />
 </launch>

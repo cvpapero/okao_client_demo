@@ -243,11 +243,14 @@ public:
 	    ++it_d; 
 	  }
 
+	d_DBHuman.clear();
+
 	map<int, humans_msgs::Human>::iterator it_o = o_DBHuman.begin();
 	while( it_o != o_DBHuman.end() )
 	  {
 	    humans_msgs::PersonPoseImg ppi;
 	    getOkaoStack( it_o->second, &ppi );
+	    d_DBHuman[it_o->second.body.tracking_id]=it_o->second;
 	    ppia.ppis.push_back( ppi );
 	    ++it_o;
 	  }
