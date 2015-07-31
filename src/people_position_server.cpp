@@ -62,6 +62,7 @@ private:
   ros::ServiceClient okaoStack_;
   ros::ServiceServer array_srv_;
 
+  boost::thread* pub_thread;
 
   //humans_msgs::Human human
 
@@ -98,6 +99,8 @@ public:
     okaoStack_
       = n.serviceClient<okao_client::OkaoStack>("stack_send");
 
+    //set up the move thread
+    pub_thread = new boost::thread(boost::bind(&PeoplePositionServer::allHumanPublisher, this));
     //array_srv_ 
     // = n.advertiseService("array_srv", 
     //			   &PeoplePositionServer::resHumans, this);
@@ -221,25 +224,32 @@ public:
   //過去に見ていた人の中から今見ている人を探す
   void allHumanPublisher()
   {
-   
+    ros::NodeHandle nmv;
+    ros::Rate rate(5);
     //ROS_INFO("all human publisher");
-    humans_msgs::PersonPoseImgArray ppia;
-    //o_DBHuman内から、tracking_idをキーにして検索
-    //map<long long, humans_msgs::Human>::iterator it_d = d_DBHuman.begin();
-    map<int, humans_msgs::Human>::iterator it_d = o_DBHuman.begin();
-    while( it_d != o_DBHuman.end() )
+    while(nmv.ok())
       {
-	//	cout <<"name: "<< it_o->second.max_okao_id << " d_id:" << it_o->second.d_id<< endl; 
-	humans_msgs::PersonPoseImg ppi;
-	getOkaoStack( it_d->second, &ppi );
+	humans_msgs::PersonPoseImgArray ppia;
+	//o_DBHuman内から、tracking_idをキーにして検索
+	//map<long long, humans_msgs::Human>::iterator it_d = d_DBHuman.begin();
+	
+	map<int, humans_msgs::Human>::iterator it_d = o_DBHuman.begin();
+	while( it_d != o_DBHuman.end() )
+	  {
+	    //	cout <<"name: "<< it_o->second.max_okao_id << " d_id:" << it_o->second.d_id<< endl; 
+	    humans_msgs::PersonPoseImg ppi;
+	    getOkaoStack( it_d->second, &ppi );
+	    
+	    ppia.ppis.push_back( ppi );
+	    
+	    ++it_d; 
+	  }
+	ppia.header.stamp = ros::Time::now();
+	ppia.header.frame_id = "map";
+	face_now_pub_.publish( ppia );
 
-	ppia.ppis.push_back( ppi );
-
-	++it_d; 
+	rate.sleep();
       }
-    ppia.header.stamp = ros::Time::now();
-    ppia.header.frame_id = "map";
-    face_now_pub_.publish( ppia );
   }
   
   void getOkaoStack(humans_msgs::Human hum, humans_msgs::PersonPoseImg *ppi)
@@ -443,16 +453,19 @@ public:
   */
  
 };
-  
+
+//thread  
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "people_position_server");
   PeoplePositionServer PPS;
+  /*
   while(ros::ok())
     {
       PPS.allHumanPublisher();
       ros::spinOnce();
     }
-  //ros::spin();
+  */
+  ros::spin();
   return 0;
 }

@@ -78,7 +78,7 @@ public:
     //まず、ファイルは以下のような形式にする
     //okao_id,name,hist,x,y,z 
     //okao_idをみて、人物の位置をo_DBHumanに詰め込んでいく   
-    std::ifstream ifs("/home/roomba/catkin_ws/src/okao_client/src/images/okaodata.txt");
+    std::ifstream ifs("/home/roomba/catkin_ws/src/okao_client_demo/src/images/okaodata.txt");
     if(ifs.fail())
       {  // if(!fin)でもよい。
 	cout << "input file error!" << endl;
@@ -96,7 +96,7 @@ public:
 	try
 	  {
 	    stringstream image_name;
-	    image_name <<"/home/roomba/catkin_ws/src/okao_client/src/images/okao" << fhum.max_okao_id << ".jpg";
+	    image_name <<"/home/roomba/catkin_ws/src/okao_client_demo/src/images/okao" << fhum.max_okao_id << ".jpg";
 	    cv::Mat src = cv::imread(image_name.str());
 	    cout << "input: " << image_name.str() << endl;
 	    sensor_msgs::Image output, grayOutput;
@@ -110,7 +110,7 @@ public:
 	    output.data.assign(src.data, src.data + size_t(src.rows*src.step));
 	    //stack.request.image = output;
 	    imgstack[ fhum.max_okao_id ] = output;
-	    
+	    /*
 	    cv::Mat graySrc;
 	    cvtColor(src, graySrc, CV_BGR2GRAY);
 
@@ -122,6 +122,7 @@ public:
 	    grayOutput.data.assign(graySrc.data, graySrc.data + size_t(graySrc.rows*graySrc.step));
 
 	    grayImgStack[ fhum.max_okao_id ] = grayOutput;
+	    */
 	  }
 	catch(cv::Exception& e)
 	  {
@@ -215,10 +216,10 @@ public:
       {
 	res.person = stack[ req.person.okao_id ];
 
-	if(ros::Duration(5) > ( ros::Time::now() - req.header.stamp ))
-	  res.image = imgstack[ req.person.okao_id ];
-	else
-	  res.image = grayImgStack[ req.person.okao_id ];
+	//if(ros::Duration(5) > ( ros::Time::now() - req.header.stamp ))
+	res.image = imgstack[ req.person.okao_id ];
+	//else
+	//res.image = grayImgStack[ req.person.okao_id ];
 
 
 	cout <<"req---> okao_id: "<< req.person.okao_id 
