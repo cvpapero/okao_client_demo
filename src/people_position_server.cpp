@@ -99,21 +99,16 @@ public:
     okaoStack_
       = n.serviceClient<okao_client::OkaoStack>("stack_send");
 
-    //set up the move thread
     pub_thread = new boost::thread(boost::bind(&PeoplePositionServer::allHumanPublisher, this));
-    //array_srv_ 
-    // = n.advertiseService("array_srv", 
-    //			   &PeoplePositionServer::resHumans, this);
 
-    file_input();
+    //file_input();
     //allHumanPublisher();
   }
   
   ~PeoplePositionServer()
   {
 
-    //p_DBHuman.clear();
-    file_output();
+    //file_output();
     d_DBHuman.clear();
     o_DBHuman.clear();
   }
@@ -219,9 +214,7 @@ public:
 
   }
 
-  //o_DBHuman内の値を見て、時間で分類してパブリッシュする
-  //今見ている人の中から時間を見て過去に分類し
-  //過去に見ていた人の中から今見ている人を探す
+
   void allHumanPublisher()
   {
     ros::NodeHandle nmv;
@@ -231,17 +224,18 @@ public:
       {
 	humans_msgs::PersonPoseImgArray ppia;
 	//o_DBHuman内から、tracking_idをキーにして検索
-	//map<long long, humans_msgs::Human>::iterator it_d = d_DBHuman.begin();
+	map<long long, humans_msgs::Human>::iterator it_d = d_DBHuman.begin();
 	
-	map<int, humans_msgs::Human>::iterator it_d = o_DBHuman.begin();
-	while( it_d != o_DBHuman.end() )
+	//map<int, humans_msgs::Human>::iterator it_d = o_DBHuman.begin();
+	while( it_d != d_DBHuman.end() )
 	  {
 	    //	cout <<"name: "<< it_o->second.max_okao_id << " d_id:" << it_o->second.d_id<< endl; 
 	    humans_msgs::PersonPoseImg ppi;
-	    getOkaoStack( it_d->second, &ppi );
-	    
-	    ppia.ppis.push_back( ppi );
-	    
+	    if( checkPeople(it_d->second) )
+	      {
+		getOkaoStack( it_d->second, &ppi );	
+		ppia.ppis.push_back( ppi );
+	      }
 	    ++it_d; 
 	  }
 	ppia.header.stamp = ros::Time::now();
@@ -252,6 +246,14 @@ public:
       }
   }
   
+  bool checkPeople(humans_msgs::Human hum)
+  {
+    if(hum.max_hist>50)
+      return true;
+    else
+      return false;
+  }
+
   void getOkaoStack(humans_msgs::Human hum, humans_msgs::PersonPoseImg *ppi)
   {
     okao_client::OkaoStack stack;
