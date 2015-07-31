@@ -226,17 +226,24 @@ public:
 	//o_DBHuman内から、tracking_idをキーにして検索
 	map<long long, humans_msgs::Human>::iterator it_d = d_DBHuman.end();
 	
+	vector<int> okao_id_log;
 	//map<int, humans_msgs::Human>::iterator it_d = o_DBHuman.begin();
 	while( it_d != d_DBHuman.begin() )
 	  {
 	    //	cout <<"name: "<< it_o->second.max_okao_id << " d_id:" << it_o->second.d_id<< endl; 
 	    if( checkHist(it_d->second) )
 	      {
-		if( checkOkaoId(it_d->second, ppia) )
+		//okao_id_log.push_back( it_d->second.max_okao_id )
+		if( checkOkaoId(it_d->second.max_okao_id, okao_id_log) )
 		  {
 		    humans_msgs::PersonPoseImg ppi;
 		    getOkaoStack( it_d->second, &ppi );	
 		    ppia.ppis.push_back( ppi );
+		    okao_id_log.push_back( it_d->second.max_okao_id );
+		  }
+		else
+		  {
+		    d_DBHuman.erase(it_d++);
 		  }
 	      }
 	    it_d--; 
@@ -257,19 +264,15 @@ public:
       return false;
   }
 
-  bool checkOkaoId(humans_msgs::Human hum, humans_msgs::PersonPoseImgArray ppia)
+  bool checkOkaoId(int okao_id, vector<int> okao_id_log)
   {
-    if(ppia.ppis.size()==0)
-      return true;
-    else
+    vector<int>::iterator itr = okao_id_log.begin();
+    while( itr!=okao_id_log.end() )
       {
-	for(int i=0; i<ppia.ppis.size(); i++)
-	  {
-	    if(hum.max_okao_id == ppia.ppis[i].person.okao_id)
-	      return false;
-	  }
-	return true;
+	if(okao_id == *itr)
+	  return false;
       }
+    return true;
   }
 
   void getOkaoStack(humans_msgs::Human hum, humans_msgs::PersonPoseImg *ppi)
