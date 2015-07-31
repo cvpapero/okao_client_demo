@@ -21,6 +21,13 @@ d_idに基づいてパブリッシュ
 #include <ros/ros.h>
 #include <geometry_msgs/PointStamped.h>
 #include <tf/transform_listener.h>
+//test
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 
 #include <map>
 #include <string>
@@ -40,6 +47,7 @@ d_idに基づいてパブリッシュ
 #include "MsgToMsg.hpp"
 
 #define MAGNI 1.5
+#define MAXOKAO 14
 
 using namespace std;
 
@@ -50,6 +58,8 @@ map<long long, humans_msgs::Human> d_DBHuman;
 
 //okao_idに基づくDB
 map<int, humans_msgs::Human> o_DBHuman;
+
+map<int, sensor_msgs::Image> img_stack;
 
 class PeoplePositionServer
 {
@@ -102,6 +112,7 @@ public:
 
     pub_thread = new boost::thread(boost::bind(&PeoplePositionServer::allHumanPublisher, this));
 
+    ROS_ASSERT(initDBImage());
     //file_input();
     //allHumanPublisher();
   }
@@ -114,8 +125,42 @@ public:
     o_DBHuman.clear();
   }
 
-  //o_DBHumanに書き込みのみ
-  //mat画像はokao_stack2がやる
+
+ bool initDBImage()
+  {
+    for(int i = 1 ; i <= MAXOKAO ; ++i)
+      {
+	try
+	  {
+	    stringstream image_name;
+	    image_name 
+	      <<"/home/roomba/catkin_ws/src/okao_client_demo/src/images/okao" << i << ".jpg";
+	    cv::Mat src = cv::imread(image_name.str());
+	    //cout << "input: " << image_name.str() << endl;
+	    sensor_msgs::Image output, output_gray;
+	    //cv::resize(output, output, cv::Size(128,128));
+	    output.height = src.rows; 
+	    output.width = src.cols;
+	    output.encoding = "bgr8";
+	    output.step 
+	      = src.cols * src.elemSize();
+	    output.data.assign(src.data, src.data + size_t(src.rows*src.step));
+
+	    img_stack[ i ] = output;
+	    
+	  }
+	catch(cv::Exception& e)
+	  {
+	    std::cout << e.what() << std::endl;
+	    return false; 
+	  }
+      }
+    return true; 
+  }
+
+
+
+
   void file_input()
   {
     cout << "file open" << endl;
@@ -249,7 +294,7 @@ public:
 	while( it_o != o_DBHuman.end() )
 	  {
 	    humans_msgs::PersonPoseImg ppi;
-	    getOkaoStack( it_o->second, &ppi );
+	    getOkaoImage( it_o->second, &ppi );
 	    d_DBHuman[it_o->second.body.tracking_id]=it_o->second;
 	    ppia.ppis.push_back( ppi );
 	    ++it_o;
@@ -271,21 +316,28 @@ public:
       return false;
   }
 
-  bool checkOkaoId(int okao_id, vector<int> okao_id_log)
+  void getOkaoImage(humans_msgs::Human hum, humans_msgs::PersonPoseImg *ppi)
   {
-    cout << "check id:" << okao_id << endl; 
-    vector<int>::iterator itr = find(okao_id_log.begin(), okao_id_log.end(), okao_id);
-    if( itr!=okao_id_log.end() )
-      {
-	cout << "exist" << endl;
-	return false;
-      }
-    else
-      {
-	cout << "not exist" << endl;
-	return true;
-      }
+
+    ppi->person.hist = hum.max_hist;
+    ppi->person.okao_id = hum.max_okao_id;
+
+    if(hum.face.persons.size())
+      ppi->person.name = hum.face.persons[0].name;
+    else 
+      ppi->person.name = "unknown";
+
+    ppi->pose.position = hum.p;
+    ppi->pose.orientation.w = 1;
+    
+    ppi->header.stamp = ros::Time::now();
+    ppi->header.frame_id = hum.header.frame_id;
+
+
+    ppi->image = img_stack[ hum.max_okao_id ];
   }
+
+
 
   void getOkaoStack(humans_msgs::Human hum, humans_msgs::PersonPoseImg *ppi)
   {

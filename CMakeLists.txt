@@ -206,6 +206,6 @@ add_executable(okao_stack src/okao_stack.cpp)
 target_link_libraries(okao_stack ${catkin_LIBRARIES})
 
 add_executable(people_position_server2 src/people_position_server2.cpp)
-target_link_libraries(people_position_server2 ${catkin_LIBRARIES})
+target_link_libraries(people_position_server2 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 
