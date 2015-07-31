@@ -238,10 +238,6 @@ public:
 		    getOkaoStack( it_d->second, &ppi );	
 		    ppia.ppis.push_back( ppi );
 		  }
-		else
-		  {
-		    d_DBHuman.erase(it_d++);
-		  }
 	      }
 	    it_d--; 
 	  }
