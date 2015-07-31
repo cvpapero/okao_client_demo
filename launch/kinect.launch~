@@ -1,0 +1,31 @@
+<launch>
+  <arg name="camera_name" default="camera" />
+  <arg name="camera_frame" default="camera_link" />
+  <arg name="base_frame" default="base_link" />
+  <arg name="ipaddress" default="133.19.23.161" />
+  <arg name="port" default="7745" />
+  <arg name="transform" default="transform" />
+  <arg name="x" default="0" />
+  <arg name="y" default="0" />
+  <arg name="z" default="0" />
+  <arg name="yaw" default="0" />
+  <arg name="pitch" default="0" />
+  <arg name="roll" default="0" />
+  <arg name="okao_name" default="okao" />
+
+  <node pkg="kinect_v2_client" type="kinect_v2_client" respawn="false" name="$(arg camera_name)">
+	<param name="ipaddress" value="$(arg ipaddress)" /> 
+	<param name="port" value="$(arg port)" />
+  	<param name="c_frame" value="$(arg camera_frame)" />
+  </node>
+
+  <!-- node pkg="tf2_ros" type="static_transform_publisher" name="$(arg transform)" args="$(arg x) $(arg y) $(arg z) $(arg yaw) $(arg pitch) $(arg roll) $(arg base_frame) $(arg camera_frame)" / --> 
+
+  <node pkg="tf" type="static_transform_publisher" name="$(arg transform)" args="$(arg x) $(arg y) $(arg z) $(arg yaw) $(arg pitch) $(arg roll) $(arg base_frame) $(arg camera_frame) 10" />
+
+  <node pkg="okao_client_demo" type="okao_client" name="$(arg okao_name)" output="screen">
+  	<remap from="/camera/image/color" to="$(arg camera_frame)/image/color" />
+	<remap from="/camera/image/face_detect" to="$(arg camera_frame)/image/face_detect" />
+  </node>
+
+</launch>

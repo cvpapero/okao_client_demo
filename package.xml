@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>okao_client</name>
+  <name>okao_client_demo</name>
   <version>0.0.0</version>
-  <description>The okao_client package</description>
+  <description>The okao_client_demo package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
