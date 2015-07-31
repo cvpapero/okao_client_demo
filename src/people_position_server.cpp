@@ -27,6 +27,7 @@ d_idに基づいてパブリッシュ
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 //#include <time.h>
 
 //オリジナルメッセージ
@@ -236,6 +237,7 @@ public:
 		//okao_id_log.push_back( it_d->second.max_okao_id )
 		if( checkOkaoId(it_d->second.max_okao_id, okao_id_log) )
 		  {
+		    cout << "now checkOkaoId ok"<<endl;
 		    humans_msgs::PersonPoseImg ppi;
 		    getOkaoStack( it_d->second, &ppi );	
 		    ppia.ppis.push_back( ppi );
@@ -266,13 +268,18 @@ public:
 
   bool checkOkaoId(int okao_id, vector<int> okao_id_log)
   {
-    vector<int>::iterator itr = okao_id_log.begin();
-    while( itr!=okao_id_log.end() )
+    cout << "check id:" << okao_id << endl; 
+    vector<int>::iterator itr = find(okao_id_log.begin(), okao_id_log.end(), okao_id);
+    if( itr!=okao_id_log.end() )
       {
-	if(okao_id == *itr)
-	  return false;
+	cout << "exist" << endl;
+	return false;
       }
-    return true;
+    else
+      {
+	cout << "not exist" << endl;
+	return true;
+      }
   }
 
   void getOkaoStack(humans_msgs::Human hum, humans_msgs::PersonPoseImg *ppi)
